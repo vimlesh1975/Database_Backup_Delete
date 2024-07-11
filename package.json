@@ -1,0 +1,22 @@
+{
+  "name": "backup_and_delete",
+  "version": "1.0.0",
+  "description": "A Node.js script to schedule daily database backup and deletion tasks.",
+  "main": "backup.js",
+  "scripts": {
+    "start": "node backup.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {
+    "7zip-bin": "^5.2.0",
+    "date-fns": "^3.6.0",
+    "date-fns-tz": "^3.1.3",
+    "dotenv": "^16.4.5",
+    "mysql2": "^3.10.2",
+    "node-7z": "^3.0.0",
+    "node-cron": "^3.0.3",
+    "pm2": "^5.4.2"
+  }
+}
