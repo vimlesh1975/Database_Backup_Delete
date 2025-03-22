@@ -1,4 +1,3 @@
-const mysql = require('mysql2');
 const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -63,35 +62,27 @@ const compressFile = (inputFile, outputFile) => {
     });
 };
 
-const deleteOldBackups = (backupDir, days) => {
+
+
+const deleteOldBackups = async (backupDir, days) => {
     const cutoffDate = sub(new Date(), { days });
-    fs.readdir(backupDir, (err, files) => {
-        if (err) {
-            console.error(`Error reading backup directory: ${err}`);
-            return;
-        }
 
-        files.forEach(file => {
+    try {
+        const files = await fs.promises.readdir(backupDir);
+        for (const file of files) {
             const filePath = path.join(backupDir, file);
-            fs.stat(filePath, (err, stats) => {
-                if (err) {
-                    console.error(`Error getting file stats for ${filePath}: ${err}`);
-                    return;
-                }
+            const stats = await fs.promises.stat(filePath);
 
-                if (stats.mtime < cutoffDate) {
-                    fs.unlink(filePath, (err) => {
-                        if (err) {
-                            console.error(`Error deleting file ${filePath}: ${err}`);
-                            return;
-                        }
-                        console.log(`Deleted old backup file: ${filePath}`);
-                    });
-                }
-            });
-        });
-    });
+            if (stats.mtime < cutoffDate) {
+                await fs.promises.unlink(filePath);
+                console.log(`Deleted old backup file: ${filePath}`);
+            }
+        }
+    } catch (err) {
+        console.error(`Error processing backup directory: ${err.message}`);
+    }
 };
+
 
 createBackup(dbConfig, backupDir);
 deleteOldBackups(backupDir, 3); // Delete files older than 3 days
