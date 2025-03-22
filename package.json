@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A Node.js script to schedule daily database backup and deletion tasks.",
   "main": "app.js",
-  "type": "module",
   "scripts": {
     "start": "node backup.js",
     "test": "echo \"Error: no test specified\" && exit 1"
