@@ -1,19 +1,13 @@
-const { exec } = require('child_process');
-const path = require('path');
-const fs = require('fs');
-const { sub } = require('date-fns');
-const seven = require('node-7z');
-const dotenv = require('dotenv');
-const { format } = require('date-fns-tz');
+import { exec } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import { sub } from 'date-fns';
+import seven from 'node-7z';
+import { format } from 'date-fns-tz';
+import cron from 'node-cron';
+import {config} from './db.js';
 
-dotenv.config();
-
-const dbConfig = {
-    host: process.env.MYSQL_HOST || 'localhost',
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD,
-    database: process.env.DATABASE_NAME
-};
+const dbConfig = config;
 
 const backupDir = process.env.BACKUP_DIR || 'C:\\nrcs_backup\\backups';
 
@@ -89,7 +83,7 @@ deleteOldBackups(backupDir, 3); // Delete files older than 3 days
 
 
 // Schedule the backup and delete tasks
-const cron = require('node-cron');
+
 
 // cron.schedule('0 2 * * *', () => {
     cron.schedule('* * * * *', () => {
