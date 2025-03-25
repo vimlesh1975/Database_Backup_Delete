@@ -5,7 +5,7 @@ import { sub } from 'date-fns';
 import seven from 'node-7z';
 import { format } from 'date-fns-tz';
 import cron from 'node-cron';
-import {config} from './db.js';
+import { config } from './db.js';
 
 const dbConfig = config;
 
@@ -23,8 +23,9 @@ const createBackup = (dbConfig, backupDir) => {
 
     const mysqldumpPath = `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump"`;
     const dumpCommand = `${mysqldumpPath} -h ${dbConfig.host} -u ${dbConfig.user} -p${dbConfig.password} ${dbConfig.database} > ${backupFile}`;
-    
-    exec(dumpCommand, (error, stdout, stderr) => {
+
+    exec(dumpCommand, { windowsHide: true }, (error, stdout, stderr) => {
+
         if (error) {
             console.error(`Error creating backup: ${error.message}`);
             return;
@@ -85,8 +86,8 @@ deleteOldBackups(backupDir, 3); // Delete files older than 3 days
 // Schedule the backup and delete tasks
 
 
-// cron.schedule('0 2 * * *', () => {
-    cron.schedule('* * * * *', () => {
+cron.schedule('0 2 * * *', () => {
+    // cron.schedule('* * * * *', () => {
     console.log('Running the backup script...');
     createBackup(dbConfig, backupDir);
 }, {
@@ -94,8 +95,8 @@ deleteOldBackups(backupDir, 3); // Delete files older than 3 days
     timezone: 'Asia/Kolkata'
 });
 
-// cron.schedule('0 3 * * *', () => {
-    cron.schedule('* * * * *', () => {
+cron.schedule('0 3 * * *', () => {
+    // cron.schedule('* * * * *', () => {
 
     console.log('Running the delete script...');
     deleteOldBackups(backupDir, 3); // Delete files older than 3 days
