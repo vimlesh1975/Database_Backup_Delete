@@ -35,7 +35,7 @@ const createBackup = (dbConfig, backupDir) => {
         fs.mkdirSync(backupDir, { recursive: true });
     }
 
-    const dumpCommand = `${mysqldumpPath} -h ${dbConfig.host} -u ${dbConfig.user} -p${dbConfig.password} ${dbConfig.database} > "${backupFile}"`;
+    const dumpCommand = `${mysqldumpPath} -h ${dbConfig.host} -u ${dbConfig.user} -p${dbConfig.password} ${dbConfig.database} --routines --triggers --events --single-transaction --quick --default-character-set=utf8mb4 > ${backupFile}`;
 
     exec(dumpCommand, { windowsHide: true, shell: true }, (error, stdout, stderr) => {
         if (error) {
