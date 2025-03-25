@@ -1,6 +1,9 @@
 import { readFile } from 'node:fs/promises';
-const phpFilePath = 'c:/inetpub/wwwroot/nrcscred.php'; //absolute path to the php file
-// const phpFilePath = '../../nrcscred.php'; //absolute path to the php file
+
+const phpFilePath =
+    process.platform === 'win32'
+        ? 'c:/inetpub/wwwroot/nrcscred.php' // Windows path
+        : '/var/www/html/nrcscred.php'; // Linux path
 
 var mysqlConfig = {};
 const readCredentials = async () => {

@@ -9,7 +9,21 @@ import { config } from './db.js';
 
 const dbConfig = config;
 
-const backupDir = process.env.BACKUP_DIR || 'C:\\nrcs_backup\\backups';
+// Set backup directory based on OS
+const backupDir =
+    process.platform === 'win32' ? 'C:\\nrcs_backup\\backups' : '/var/backups/nrcs';
+
+// Set MySQL dump command path based on OS
+const mysqldumpPath =
+    process.platform === 'win32'
+        ? `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump"`
+        : 'mysqldump'; // On Linux, mysqldump should be in PATH
+
+// Set 7-Zip executable path based on OS
+const sevenZipPath =
+    process.platform === 'win32'
+        ? 'C:\\Program Files\\7-Zip\\7z.exe'
+        : '/usr/bin/7z'; // Linux usually has p7zip installed here
 
 const createBackup = (dbConfig, backupDir) => {
     const now = new Date();
@@ -21,11 +35,9 @@ const createBackup = (dbConfig, backupDir) => {
         fs.mkdirSync(backupDir, { recursive: true });
     }
 
-    const mysqldumpPath = `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump"`;
-    const dumpCommand = `${mysqldumpPath} -h ${dbConfig.host} -u ${dbConfig.user} -p${dbConfig.password} ${dbConfig.database} > ${backupFile}`;
+    const dumpCommand = `${mysqldumpPath} -h ${dbConfig.host} -u ${dbConfig.user} -p${dbConfig.password} ${dbConfig.database} > "${backupFile}"`;
 
-    exec(dumpCommand, { windowsHide: true }, (error, stdout, stderr) => {
-
+    exec(dumpCommand, { windowsHide: true, shell: true }, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error creating backup: ${error.message}`);
             return;
@@ -44,7 +56,7 @@ const createBackup = (dbConfig, backupDir) => {
 const compressFile = (inputFile, outputFile) => {
     const zip = seven.add(outputFile, inputFile, {
         recursive: true,
-        $bin: 'C:\\Program Files\\7-Zip\\7z.exe' // Adjust the path to 7z executable if necessary
+        $bin: sevenZipPath,
     });
 
     zip.on('end', () => {
@@ -56,8 +68,6 @@ const compressFile = (inputFile, outputFile) => {
         console.error(`Error compressing file: ${err}`);
     });
 };
-
-
 
 const deleteOldBackups = async (backupDir, days) => {
     const cutoffDate = sub(new Date(), { days });
@@ -78,16 +88,11 @@ const deleteOldBackups = async (backupDir, days) => {
     }
 };
 
-
 createBackup(dbConfig, backupDir);
 deleteOldBackups(backupDir, 3); // Delete files older than 3 days
 
-
-// Schedule the backup and delete tasks
-
-
+// Schedule backup and delete tasks
 cron.schedule('0 2 * * *', () => {
-    // cron.schedule('* * * * *', () => {
     console.log('Running the backup script...');
     createBackup(dbConfig, backupDir);
 }, {
@@ -96,10 +101,8 @@ cron.schedule('0 2 * * *', () => {
 });
 
 cron.schedule('0 3 * * *', () => {
-    // cron.schedule('* * * * *', () => {
-
     console.log('Running the delete script...');
-    deleteOldBackups(backupDir, 3); // Delete files older than 3 days
+    deleteOldBackups(backupDir, 3);
 }, {
     scheduled: true,
     timezone: 'Asia/Kolkata'
